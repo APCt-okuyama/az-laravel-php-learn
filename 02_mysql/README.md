@@ -73,7 +73,7 @@ system clear
 
 ユーザーの作成と権限付与 (アプリ用のユーザーなど必要に応じて作成, 権限も必要なモノを与える)
 ```
-create user 'apcuser1' IDENTIFIED BY 'password';
+create user 'apcuser1' identified BY 'password';
 grant all privileges on sampledb.* to apcuser1;
 flush privileges;
 
