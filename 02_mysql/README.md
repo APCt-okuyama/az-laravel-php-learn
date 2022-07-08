@@ -1,3 +1,15 @@
+# Azure Database Server for mysql
+
+サーバーの作成
+```
+az mysql server create --resource-group $RG_NAME --name my-example-dbserver --location $LOCATION --admin-user myadmin --admin-password password@123 --sku-name GP_Gen5_2
+```
+
+DBの作成
+```
+az mysql db create --resource-group $RG_NAME --server-name my-example-dbserver --name sampledb
+```
+
 # mysql
 
 接続

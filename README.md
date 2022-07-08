@@ -1,6 +1,8 @@
 # az-laravel-php-learn
 
-Azure でのphp, laravel についての調査
+Laravel (PHP)の基本的な利用方法とAzureで利用するときのトピックを纏めておきます。
+
+![image](./new-php-logo.png)
 
 # Azure env
 ```
@@ -9,7 +11,7 @@ export LOCATION=japaneast
 az group create -n $RG_NAME -l $LOCATION
 ```
 
-# 使わないリソースは削除!
+## 使わないリソースは削除しましょう
 ```
 az group delete -n $RG_NAME -y --no-wait
 ```
