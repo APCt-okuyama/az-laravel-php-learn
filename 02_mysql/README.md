@@ -91,3 +91,10 @@ exit
 # (備考) 利用する観点でのoracle, postgresとの違い
 基本的に利用する Table, View, Trigger, Index 基本的な機能はほぼ同じと思ってよい。
 Materialized View をサポートしていないので、利用したい場合は tirggerを利用して疑似的に作成する必要がある。
+
+参考サイト (比較しているブログは多数ある)
+[db-engines ranking](https://db-engines.com/en/ranking)
+
+[db-engines azureでの比較](https://db-engines.com/en/system/Microsoft+Azure+SQL+Database%3BMySQL%3BPostgreSQL)
+
+[ibm blog](https://www.ibm.com/cloud/blog/postgresql-vs-mysql-whats-the-difference)
