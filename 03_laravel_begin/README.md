@@ -114,13 +114,45 @@ mysql> show tables;
 +------------------------+
 5 rows in set (0.04 sec)
 ```
-## 認証機能
+## CSS Tailwind/Bootstrap 
+ログイン画面にCSSを適応
+
+※ node が必要
+```
+node -v
+v14.18.1
+```
+
+この２つを試す
 | --- | css |
 | --- | --- |
 | Laravel Breeze | Tailwind |
 | Laravel/ui | Bootstrap |
+
+```
+composer require laravel/breeze --dev
+php artisan breeze:install
+npm install
+npm run
+```
+
+```
+composer require laravel/ui
+php artisan ui bootstrap --auth
+npm install
+npm run
+```
+
+vue,reactも追加できる（ちょっとよくわからない？）
+```
+php artisan ui vue
+php artisan ui react
+```
+
 # まとめ
 フルスタックすぎてはじめるまでに時間がかかる。
 XAMPとか必要かのか不明。。。
 (他のフレームワークも同様だけど。)
+js,cssの知識も必要※都度しらべる必要がある。
+
 
