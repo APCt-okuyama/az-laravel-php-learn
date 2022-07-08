@@ -2,19 +2,31 @@
 
 サーバーの作成
 ```
-az mysql server create --resource-group $RG_NAME --name my-example-dbserver --location $LOCATION --admin-user myadmin --admin-password password@123 --sku-name GP_Gen5_2
+az mysql server create --resource-group $RG_NAME --name example-mysql-server --location $LOCATION --admin-user myadmin --admin-password password@123 --sku-name GP_Gen5_2
+```
+sku = GP_Gen5_2 (192.17USD/月)
+
+
+ローカルからの接続許可 (必要であれば)
+```
+az mysql server firewall-rule create --resource-group myresourcegroup --server mydemoserver \
+    --name AllowMyIP \
+        --start-ip-address 192.168.198.71 \
+        --end-ip-address 192.168.198.71
 ```
 
-DBの作成
+DBの作成 (適当に3つくらい作成)
 ```
-az mysql db create --resource-group $RG_NAME --server-name my-example-dbserver --name sampledb
+az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb
+az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb1
+az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb2
 ```
 
 # mysql
 
 接続
 ```
-mysql -h my-example-dbserver.mysql.database.azure.com -u myadmin@my-example-dbserver -p
+mysql -h example-mysql-server.mysql.database.azure.com -u myadmin@example-mysql-server -p
 mysql> 
 ```
 
@@ -59,10 +71,23 @@ insert into user (name) values ("ccc");
 system clear
 ```
 
+ユーザーの作成と権限付与 (アプリ用のユーザーなど必要に応じて作成, 権限も必要なモノを与える)
+```
+create user 'apcuser1' IDENTIFIED BY 'password';
+grant all privileges on sampledb.* to apcuser1;
+flush privileges;
+
+(例 apcuser2 に sampledb の参照(SELECT)権限のみを与える)
+create user 'apcuser2' identified by 'password';
+grant SELECT on sampledb.* to apcuser2;
+flush privileges;
+```
+
 終了
-```
-quit
-```
 ```
 exit
 ```
+
+# (備考) 利用する観点でのoracle, postgresとの違い
+基本的に利用する Table, View, Trigger, Index 基本的な機能はほぼ同じと思ってよい。
+Materialized View をサポートしていないので、利用したい場合は tirggerを利用して疑似的に作成する必要がある。
