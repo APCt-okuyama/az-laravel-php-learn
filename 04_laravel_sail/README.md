@@ -1,15 +1,26 @@
 # Laravel Sail
+https://readouble.com/laravel/8.x/ja/sail.html
+Laravel Sail とは docker開発環境を操作するためのコマンドです。  
 
+
+図にするとこんな感じ。
 ![image](./laravel-sail.png)
 
-https://readouble.com/laravel/8.x/ja/sail.html
-
-Laravel Sail とは docker開発環境を操作するためのコマンドです。
-
-本質は docker-compose.yml と sailスクリプト です。
+sailの本質は docker-compose.yml と sailスクリプト です。
 sailスクリプト (./vender/bin/sail) は bash です。
 
-# 環境 (dockerが必要)
+## メリット
+
+メリットはDocker環境を簡単に作成できるところ。
+ただしDocker/Docker Composeの基本的な利用方法の習得は必須。 
+
+デフォルトで作成される環境をベースにして、開発環境を構築していくのが良い。
+本番運用もコンテナの場合はイメージのサイズの軽量化も検討する。
+※デフォルトの開発環境は1GB近いサイズになっている。
+
+開発にdocker/docker-composeは利用した方が良いとは思うが、laravel-sail自体の利用は必須ではない。
+
+# 検証環境 (dockerが必要)
 ```
 $ cat /etc/os-release 
 NAME="Ubuntu"
@@ -27,7 +38,8 @@ docker-compose -v
 docker-compose version 1.29.2, build 5becea4c
 ```
 
-# LLaravel プロジェクトの新規作成
+# Laravel プロジェクトの新規作成
+(既存のプロジェクトにsailを追加することも可能です。)
 
 https://readouble.com/laravel/8.x/ja/starter-kits.html
 
@@ -59,9 +71,8 @@ services:
 ```
 すぐに利用できるようにmysql, redis, meilisearch(全文検索エンジン), mailhog(メールサーバー), selenium が含まれている。
 
-# Sail
+# Laravel Sail
 https://readouble.com/laravel/8.x/ja/sail.html
-
 
 起動、停止
 ```
@@ -135,3 +146,4 @@ cat docker-compose.yml
 ```
 ./vendor/bin/sail node -v
 ```
+
