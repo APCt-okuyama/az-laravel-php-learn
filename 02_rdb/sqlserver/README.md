@@ -4,8 +4,10 @@ MicrosoftのRDBです。
 
 ## 他DB(postgres, mysql)との大きな違い
 
+SQLに関しては基本的に同じ。  
+
 「Transact-SQL（T-SQL）」 を利用する。  
-T-SQLとはSQLを拡張した言語。
+T-SQLとはSQLを拡張した言語で「条件分岐や繰り返しなどを含む複雑な制御構造などを記述することができる。」Oracleでいうところの「PL/SQL」、PostgreSQLの「PL/pgSQL」に相当する。
 
 ## Azureでのsql server (Azure SQL)
 
@@ -100,11 +102,6 @@ exit
 VS Codeの拡張機能, SQL Server Management Studio, Azure Data Studio, Docker などが利用可能。
 （他のDBも同様だが多数ありすぎて迷う）
 
-## 「Transact-SQL（T-SQL）」の特徴
-
-「条件分岐や繰り返しなどを含む複雑な制御構造などを記述することができる。」
-
-他のDBと比較しての大きな違いがあまりわからない。（★要確認）
 
 ## 料金
 他のDBと比較して料金の設定はどうか？ (★要確認　他とくらべると高め？？)
