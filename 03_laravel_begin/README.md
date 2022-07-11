@@ -61,7 +61,10 @@ mysql> show databases;
 8 rows in set (0.01 sec)
 ```
 
+Azure Database for MySQL に接続
 ```
+vi /config/database.php
+:
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
@@ -85,7 +88,9 @@ mysql> show databases;
                 PDO::MYSQL_ATTR_SSL_KEY    => '/ssl/BaltimoreCyberTrustRoot.crt.pem',                
             ]) : [],
         ],
+:
 ```
+
 .env
 ```
 DB_CONNECTION=mysql
