@@ -3,6 +3,7 @@
 Laravel (PHP)の基本的な利用方法とAzureで利用するときのトピックを纏めておきます。
 
 ![image](./new-php-logo.png)
+![image](./laravel.png)
 
 # Azure env
 ```

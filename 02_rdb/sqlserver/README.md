@@ -26,8 +26,6 @@ Azure Portalで確認すると１つのSQL Serverに２つのDatabase。
 ![image](./sqlserver_sqldatabase_portal.png)
 
 ## 触ってみる　Azure SQL Database
-login="apcuser1"
-password="Password@123"
 
 db server作成
 ```
@@ -37,9 +35,9 @@ az sql server create --name my-example-sqldb-server \
 ```
 
 firewall設定　※外部からアクセス可能に
-startIp=123.48.1.91
-endIp=123.48.1.91
 ```
+startIp=aaa.bbb.ccc.ddd
+endIp=aaa.bbb.ccc.ddd
 echo "Configuring firewall..."
 az sql server firewall-rule create --resource-group $RG_NAME --server my-example-sqldb-server -n AllowYourIp --start-ip-address $startIp --end-ip-address $endIp
 ```
