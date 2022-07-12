@@ -18,7 +18,8 @@ sailスクリプト (./vender/bin/sail) は bash です。
 本番運用もコンテナの場合はイメージのサイズの軽量化も検討する。
 ※デフォルトの開発環境は1GB近いサイズになっている。
 
-開発にdocker/docker-composeは利用した方が良いとは思うが、laravel-sail自体の利用は必須ではない。
+開発にdocker/docker-composeは利用した方が良いとは思うが、Sailが未対応のサービスもあるのでlaravel-sailの利用は必須ではない。
+※laravel-sail で利用可能なサービス : mysql、pgsql、mariadb、redis、memcached、meilisearch、minio、selenium、mailhog
 
 ## デメリット（注意点）
 Laravel-sailのデメリットというわけではなく開発環境をDockerで管理する場合の注意点として、コンポーネントが大きかったり、多くなってくるとローカルマシンのコンピューターのリソースが大量に必要になるという問題がある。コンテナは軽量プロセスとはいえ、ホストOSのリソースを利用するので注意が必要。極端にハイスペックな開発マシンが必要になってしまうと開発者が参加しにくい（ハイスペックなマシンがないと開発できない）という問題になる。対策としては、DBなどのリソースはクラウドのモノを利用してローカルマシンのリソースを利用しないなどを検討する。
@@ -75,6 +76,8 @@ services:
         image: 'selenium/standalone-chrome'
 ```
 すぐに利用できるようにmysql, redis, meilisearch(全文検索エンジン), mailhog(メールサーバー), selenium が含まれている。
+
+このスターターキット(Laravel Breeze)には、認証ビュー、ルート、コントローラなどが含まれています。
 
 # Laravel Sail
 https://readouble.com/laravel/8.x/ja/sail.html
