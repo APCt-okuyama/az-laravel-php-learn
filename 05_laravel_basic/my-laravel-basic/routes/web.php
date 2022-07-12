@@ -1,4 +1,5 @@
 <?php
+//　ファイル全体が純粋なPHPコードの場合、<?php の終了タグは省略可能
 
 use Illuminate\Support\Facades\Route;
 
