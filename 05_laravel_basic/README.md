@@ -1,9 +1,12 @@
 # Laravel webアプリ開発 (基礎)
 
-このページの `基礎` のところの解説です。
 https://readouble.com/laravel/8.x/ja/
+このページの `基礎` のところの解説です。
 
-画面遷移を含む web ui を作成してみる。
+ボリュームが結構あるので２日くらいにかけて実施。
+PHPのプログラミング基礎があるとスムーズに理解できる(はずです)。
+
+LaravelはフルスタックのフレームワークとしてFrontendとBackendの要素を包括しているがBackend APIとしてのみの利用も可能。
 
 ## 基礎
 | 用語 | 概要 | 備考 |
@@ -76,9 +79,135 @@ php artisan serve
 ```
 
 ## ルーティング
+
+URIとクロージャを引数に取る関数として実装していきます。
+web.phpに定義される。
+
+```
+├── routes
+│   ├── api.php       ★ Api用のルート
+│   ├── channels.php
+│   ├── console.php
+│   └── web.php       ★ Webインターフェイス用のルート
+```
+
+レート制限の定義(RouteServiceProvider.php) レート制限を超えると、429 HTTPステータスコードのレスポンスを返す
+
+オリジン間リソース共有 (CORS)
+config/cors.php
+
+ルートのキャッシュ(php artisan route:cache)
+プロジェクトのデプロイ中にのみroute：cacheコマンドを実行する
+```
+php artisan route:cache
+php artisan route:clear
+```
+
 ## ミドルウェア 
-## CSRF保護
+HTTPリクエストを検査およびフィルタリングする。
+HTTPリクエストがアプリケーションに到達する前に通過しなければならない一連の「レイヤー」としてとらえる。
+
+ミドルウェアの作成
+```
+php artisan make:middleware MyEnsureTokenIsValid
+
+#クラスが作成されます
+cat app/http/Middleware/MyEnsureTokenIsValid.php
+```
+
+ミドルウェアの登録
+
+グローバルミドルウェア(app/Http/Kernel.php), ルートに対するミドルウェアの指定とそれぞれのルートごとの設定が可能。
+
+
+### routes/web.php と routes/api.php
+デフォルトでwebとapiの設定が明確に分かれている
+| xxx.php | 役割 |
+| --- | --- |
+| routes/web.php | ブラウザからHTTPリクエストをうけて、画面に表示するようなルーティング<br>CSRF保護などの機能が有効になっている |
+| routes/api.php | 外部からのHTTPリクエストをうけて、値を返却したりするようなルーティング |
+
+## CSRF保護 (クロスサイト・リクエスト・フォージェリ)
+クロスサイトリクエストフォージェリ（CSRF）とは
+Laravelを使用すれば、クロスサイトリクエストフォージェリ（CSRF）攻撃からアプリケーションを簡単に保護できる。
+
+対策としては、
+すべての受信POST、PUT、PATCH、DELETEリクエストを調べて、悪意のあるアプリケーションがアクセスできないシークレットセッション値を確認する必要がある。
+LaravelではユーザーセッションごとにCSRF「トークン」を自動的に生成する機能があります。
+トークンはユーザーのセッションに保存され、セッションが再生成されるたびに変更されます。
+フォームに非表示のCSRF_tokenフィールドを含める必要があります。
+
+Bladeディレクティブ
+```
+<form method="POST" action="/profile">
+    @csrf
+
+    <!-- Equivalent to... -->
+    <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+</form>
+```
+関連キーワード：Laravel　Sanctum
+
 ## コントローラ
+すべてのリクエスト処理ロジックをルートファイルのクロージャとして定義する代わりに、「コントローラ」クラスを使用してこの動作を整理することを推奨している。
+
+App\Http\Controllers\Controllerを拡張する
+
+コントローラーの作成
+```
+php artisan make:controller MyExampleController
+```
+
+リソースコントローラーの作成　※各種アクション(GET,POST,PUT,PATCH,DELETE)のひな型を含めて作成
+```
+php artisan make:controller MyExampleResouceController --resource
+```
+
+リソースモデルの指定して作成
+```
+php artisan make:controller MyExampleResModelController --model=MyResource --resource
+```
+
+コンストラクターインジェクション: コンストラクターで指定
+```
+class UserController extends Controller
+{
+    /**
+     * ユーザーリポジトリインスタンス
+     */
+    protected $users;
+
+    /**
+     * 新しいコントローラインスタンスの生成
+     *
+     * @param  \App\Repositories\UserRepository  $users
+     * @return void
+     */
+    public function __construct(UserRepository $users)
+    {
+        $this->users = $users;
+    }
+}
+```
+メソッドインジェクション:タイプヒント(引数の型指定)により依存を指定
+```
+class UserController extends Controller
+{
+    /**
+     * 新ユーザーの保存
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $name = $request->name;
+
+        //
+    }
+}
+```
+
 ## リクエスト
 ## レスポンス
 ## ビュー
@@ -87,4 +216,25 @@ php artisan serve
 ## セッション 
 ## バリデーション
 ## エラー処理 
+
 ## ログ
+Monologライブラリを利用
+config/logging.php
+
+
+logを標準出力へ出す設定を追加
+```
+cat config/logging.php
+:
+        //stdoutにログを出力させます
+        //.envにの設定変更
+        //LOG_CHANNEL=stdout
+        'stdout' => [
+            'driver' => 'monolog',
+            'handler' => StreamHandler::class,
+            'with' => [
+                'stream' => 'php://stdout',
+            ],
+        ],
+:
+```
