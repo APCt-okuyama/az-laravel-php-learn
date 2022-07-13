@@ -314,3 +314,14 @@ cat config/logging.php
         ],
 :
 ```
+
+# その他
+## App Serviceへデプロイ関連
+
+ルートフォルダに.htaccessが必要
+
+php artisan route:clear
+以下のエラーの場合は高度なツールからキャッシュをクリアする。
+```
+"Laravel\SerializableClosure\Exceptions\InvalidSignatureException"となったので
+```

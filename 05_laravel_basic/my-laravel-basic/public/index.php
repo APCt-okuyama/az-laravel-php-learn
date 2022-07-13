@@ -3,7 +3,7 @@
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
-use Illuminate\Support\Facades\Log;
+//use Illuminate\Support\Facades\Log;
 
 define('LARAVEL_START', microtime(true));
 
@@ -54,6 +54,6 @@ $response = $kernel->handle(
     $request = Request::capture()
 )->send();
 
-Log::info('this is in index.php...');
+//Log::info('this is in index.php...');
 
 $kernel->terminate($request, $response);

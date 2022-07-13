@@ -123,13 +123,21 @@ Laravel アプリケーション キーを生成
 php artisan key:generate --show
 ```
 
+"Laravel\SerializableClosure\Exceptions\InvalidSignatureException"
+高度なツールからキャッシュをクリアしてみる
+```
+php artisan route:clear
+```
+
+
 App Serviceの設定変更
 ```
 az webapp config appsettings set \
 -n my-example-laravel-app \
 -g $RG_NAME \
---settings APP_KEY="base64:MJW/eV1+Z9Kjxxxxxxxxxx" APP_DEBUG="true"
+--settings APP_KEY="base64:md09yEhsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" APP_DEBUG="true"
 ```
+※ APP_DEBUG="true" 運用環境ではfalseが推奨
 
 # Service Connector
 これは必要なのか不明？
