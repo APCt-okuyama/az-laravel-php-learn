@@ -13,7 +13,7 @@ LaravelはフルスタックのフレームワークとしてFrontendとBackend�
 | --- | --- | --- |
 | ルーティング | API用、WEB用とわけて管理する | |
 | ミドルウェア | clientとアプリケーションの間で「検査・フィルタリング」機能を提供するレイヤー <br>app/Http/Kernel.php で各ルートに対して設定する| |
-| CSRF保護 | POST、PUT、PATCH、DELETEリクエストから悪意のあるアプリケーションを保護する<br>Laravelがユーザーセッションごとにトークンを自動的に生成、トークンはユーザーのセッションに保存<br>Laravel Sanctum（サンクタム、聖所） | |
+| CSRF保護 | POST、PUT、PATCH、DELETEリクエストから悪意のあるアプリケーションを保護する<br>Laravelがユーザーセッションごとにトークンを自動的に生成、トークンはユーザーのセッションに保存<br><br>Kernel.phpのwebのミドルウェアにVerifyCsrfTokenを設定されている。apiは設定されていないのでCSRF保護は無効<br><br><br>Laravel Sanctum（サンクタム、聖所） | |
 | コントローラ | ルートファイルのクロージャをコントローラークラスとして定義<br>クラス分けの方法の推奨 | |
 | リクエスト | | |
 | レスポンス | | |
@@ -91,6 +91,19 @@ api.php,web.phpなどに定義される。
 │   └── web.php       ★ Webインターフェイス用のルート
 ```
 
+api.phpは RouteServiceProvider.php で以下のように設定されている。
+```
+        $this->routes(function () {
+            Route::prefix('api')
+                ->middleware('api')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/api.php'));
+```
+prefix('api')が設定されているのでアクセスする場合は以下のようになる。
+```
+curl http://127.0.0.1:8000/api/myapi
+```
+
 レート制限の定義(RouteServiceProvider.php) レート制限を超えると、429 HTTPステータスコードのレスポンスを返す
 
 オリジン間リソース共有 (CORS)
@@ -146,7 +159,50 @@ Bladeディレクティブ
     <input type="hidden" name="_token" value="{{ csrf_token() }}" />
 </form>
 ```
+
+### ブラウザ(Chrome)で http://127.0.0.1:8000/ にアクセスして確認
+
+DevTool で http://127.0.0.1:8000/ への 初回のGETリクエストのレスポンスで XSRF-TOKEN を受け取っていることが分かる。
+２回目以降はREQUESTに自動で設定されていることも確認できる。
+![image](./Cookies.PNG)
+
+Browser(Chrome)のCookies では XSRF-TOKEN と laravel_session として保存されていることが確認できる。有効期限なども設定されている。
+![image](./XSRF-TOKEN_laravel_session.PNG)
+
 関連キーワード：Laravel　Sanctum
+
+### curlコマンドでAPIルートの場合との比較
+Webルート
+```
+curl http://127.0.0.1:8000/ -i
+HTTP/1.1 200 OK
+Host: 127.0.0.1:8000
+Date: Wed, 13 Jul 2022 04:42:24 GMT
+Connection: close
+X-Powered-By: PHP/7.4.3
+Content-Type: text/html; charset=UTF-8
+Cache-Control: no-cache, private
+Date: Wed, 13 Jul 2022 04:42:24 GMT
+Set-Cookie: XSRF-TOKEN=eyJpdiI6I...<キーが確認できる>
+Set-Cookie: laravel_session=eyJpdiI6I...<キーが確認できる>
+:
+```
+
+APIルート
+```
+curl http://127.0.0.1:8000/api/myapi2 -i
+HTTP/1.1 200 OK
+Host: 127.0.0.1:8000
+Date: Wed, 13 Jul 2022 04:39:28 GMT
+Connection: close
+X-Powered-By: PHP/7.4.3
+Cache-Control: no-cache, private
+Date: Wed, 13 Jul 2022 04:39:28 GMT
+Content-Type: application/json
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 57
+Access-Control-Allow-Origin: *
+```
 
 ## コントローラ
 すべてのリクエスト処理ロジックをルートファイルのクロージャとして定義する代わりに、「コントローラ」クラスを使用してこの動作を整理することを推奨している。

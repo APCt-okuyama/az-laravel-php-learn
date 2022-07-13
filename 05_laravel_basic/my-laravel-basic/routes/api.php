@@ -20,6 +20,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/myapi2', function (Request $request) {
+    Log::info('start myapi2');
+    return ['message' => 'myapi2 is working.'];
+});
+
 Route::post('/myapi', function (Request $request) {
     Log::info('start myapi');
     Log::info($request);
