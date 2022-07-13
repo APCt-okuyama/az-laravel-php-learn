@@ -67,3 +67,9 @@ Route::post('/mymddleware', function () {
 //直接Classの指定もできる
 //})->middleware(MyEnsureTokenIsValid::class);
 
+Route::get('/myreq', function( Request $request ){
+    Log::info('myreq start...'); 
+    Log::info($request);
+    return 'myreq is working';
+});
+

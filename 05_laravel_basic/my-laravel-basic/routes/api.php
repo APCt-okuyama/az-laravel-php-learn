@@ -20,9 +20,31 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/myapi', function (Request $request) {
-    Log::info('start myapi');    
-    return "my api start.";
+Route::post('/myapi', function (Request $request) {
+    Log::info('start myapi');
+    Log::info($request);
+    Log::info($request->input("name"));
+    //var_dump($request);
+
+    //contentがbody?
+    $content = $request->getContent();
+    Log::info($content);
+
+    if ($request->expectsJson()) {
+        Log::info("expectsJson is true");
+    } else {
+        Log::info("expectsJson is false");
+    }
+
+    $ipAddress = $request->ip();
+    Log::info("ipAddress is $ipAddress");
+
+    //JSONとして返す 下記２つは同じ
+    // return response()->json([
+    //     'message' => 'api is working.',
+    //     Response::HTTP_OK
+    // ]);
+    return ['message' => 'api is working2.'];
 });
 
 // Route::get('/myapi', function () {
