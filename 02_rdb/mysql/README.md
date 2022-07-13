@@ -2,24 +2,29 @@
 
 サーバーの作成
 ```
-az mysql server create --resource-group $RG_NAME --name example-mysql-server --location $LOCATION --admin-user myadmin --admin-password password@123 --sku-name GP_Gen5_2
+az mysql server create --resource-group $RG_NAME \
+--name example-mysql-server --location $LOCATION \
+--sku-name GP_Gen5_2 \
+--admin-user <USERNAME> \
+--admin-password <PASSWORD>
 ```
 sku = GP_Gen5_2 (192.17USD/月)
 
 
 ローカルからの接続許可 (必要であれば)
 ```
-az mysql server firewall-rule create --resource-group myresourcegroup --server mydemoserver \
-    --name AllowMyIP \
-        --start-ip-address 192.168.198.71 \
-        --end-ip-address 192.168.198.71
+az mysql server firewall-rule create --resource-group $RG_NAME \
+--server example-mysql-server \
+--name AllowMyIP \
+--start-ip-address 192.168.198.75 \
+--end-ip-address 192.168.198.75
 ```
 
 DBの作成 (適当に3つくらい作成)
 ```
-az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb
 az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb1
 az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb2
+az mysql db create --resource-group $RG_NAME --server-name example-mysql-server --name sampledb3
 ```
 
 # mysql

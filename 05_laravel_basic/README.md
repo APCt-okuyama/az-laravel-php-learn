@@ -267,6 +267,26 @@ class UserController extends Controller
 ## リクエスト
 ## レスポンス
 ## ビュー
+```
+<!-- View stored in resources/views/greeting.blade.php -->
+
+<html>
+    <body>
+        <h1>Hello, {{ $name }}</h1>
+    </body>
+</html>
+```
+
+パフォーマンスを向上させるために、デプロイプロセスの一部として次のコマンドを実行することを推奨。というか必須では（？）
+```
+php artisan view:cache
+```
+
+ビューキャッシュを消去
+```
+php artisan view:clear
+```
+
 ## Bladeテンプレート
 ## URL生成
 ## セッション 

@@ -19,7 +19,8 @@ use App\Http\Middleware\MyEnsureTokenIsValid;
 
 Route::get('/', function () {
     Log::info('start welcome');
-    return view('welcome');
+    return view('greeting', ['name' => 'James']);
+    //return view('welcome');
 });
 
 Route::get('/greeting', function () {
