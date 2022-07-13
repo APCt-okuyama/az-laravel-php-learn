@@ -107,6 +107,8 @@ php artisan serve (アプリケーションを実行)
 
 # App Service にデプロイ へ デプロイ
 
+(重要) App Service の既定の PHP Docker イメージでは Apache が使用される。
+
 ## App Serviceを作成
 デプロイ（リソースグループの作成、AppServiceプランの作成、アプリの作成が行われる）
 ```
@@ -126,7 +128,7 @@ App Serviceの設定変更
 az webapp config appsettings set \
 -n my-example-laravel-app \
 -g $RG_NAME \
---settings APP_KEY="base64:Pw64nlwhAT39w998x6HTDixBrOin2I+/jScG6ruePu4=" APP_DEBUG="true"
+--settings APP_KEY="base64:MJW/eV1+Z9Kjxxxxxxxxxx" APP_DEBUG="true"
 ```
 
 # Service Connector

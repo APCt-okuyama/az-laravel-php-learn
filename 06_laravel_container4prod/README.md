@@ -9,5 +9,8 @@ cd public
 php -S localhost:8000
 ```
 ## サーバ要件
+
 https://readouble.com/laravel/8.x/ja/deployment.html
+
+ubuntu x nginx x php7.4.3
 
