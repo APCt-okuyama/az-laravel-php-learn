@@ -25,8 +25,10 @@ FPM ( FastCGI Process Manager ) は PHPのFastCGI実装のひとつで、 主に
 https://hub.docker.com/_/php
 
 ## php:\<version>-apache
-一つのイメージの中にApache, PHP, Laravelを入れます。
+一つのイメージの中にApache, PHP, Laravelを入れます。  
+
 ![image](./laravel_apache_cont_image.png)
+
 ※ Apache の基本的な設定の知識が少し必要です。都度調べる。php.iniとか
 
 `php:7.4-apache` の `/var/www/html/` にソースコードを含めてイメージを作成します。
