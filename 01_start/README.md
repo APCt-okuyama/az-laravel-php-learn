@@ -100,9 +100,8 @@ php artisan serve (アプリケーションを実行)
 ブラウザーで http://localhost:8000 にアクセスして確認できる。
 
 ## artisanって？
-
-
-
+Laravelの管理ツールです。プロジェクトを作成したり、プロジェクトに関数を追加したりします。
+cacheのクリアもこのツールを利用します。
 
 
 # App Service にデプロイ へ デプロイ
@@ -116,7 +115,6 @@ az webapp up --resource-group $RG_NAME --name my-example-laravel-app --location 
 ```
 sku=B1(13.87USD/月)
 sku=P1V2 (89.79USD/月)
-
 
 Laravel アプリケーション キーを生成
 ```

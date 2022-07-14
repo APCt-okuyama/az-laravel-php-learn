@@ -19,5 +19,6 @@ az group create -n $RG_NAME -l $LOCATION
 
 ## 使わないリソースは削除しましょう
 ```
+echo $RG_NAME
 az group delete -n $RG_NAME -y
 ```
