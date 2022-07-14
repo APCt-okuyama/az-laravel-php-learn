@@ -5,8 +5,7 @@
 az mysql server create --resource-group $RG_NAME \
 --name example-mysql-server --location $LOCATION \
 --sku-name GP_Gen5_2 \
---admin-user <USERNAME> \
---admin-password <PASSWORD>
+--admin-user <USERNAME> --admin-password <PASSWORD>
 ```
 sku = GP_Gen5_2 (192.17USD/月)
 
