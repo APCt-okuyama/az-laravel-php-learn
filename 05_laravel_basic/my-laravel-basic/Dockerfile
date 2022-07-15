@@ -1,6 +1,12 @@
 FROM php:7.4-apache
 
 #
+#
+# php:7.4-apache に laravel をインストールして１つのイメージにまとめます。
+#
+#
+
+# 拡張 phpなど
 RUN apt update && apt install -y zlib1g-dev g++ libicu-dev zip libzip-dev zip libpq-dev \
     && docker-php-ext-install intl opcache pdo_mysql \
     && pecl install apcu \
@@ -8,9 +14,9 @@ RUN apt update && apt install -y zlib1g-dev g++ libicu-dev zip libzip-dev zip li
     && docker-php-ext-configure zip \
     && docker-php-ext-install zip
 
-#
+# RUN apt update && apt install -y procps
 # RUN apt-get install -y vim
-# composer 必要？
+
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 #laravel アプリのソースをコンテナイメージにコピー
