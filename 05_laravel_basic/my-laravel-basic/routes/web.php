@@ -19,8 +19,15 @@ use App\Http\Controllers\MyTaskController;
 |
 */
 
-Route::get('/', function () {
+Route::get('/', function (Request $request) {
     Log::info('start welcome');
+
+    $mysession = $request->session()->get('key');
+    $data = $request->session()->all();
+    Log::info('$sessionValue --- ');
+    Log::info($data);
+    Log::info('$sessionValue --- ');
+
     return view('greeting', ['name' => 'James']);
     //return view('welcome');
 });

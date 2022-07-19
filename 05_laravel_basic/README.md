@@ -296,6 +296,41 @@ php artisan view:clear
 ## Bladeテンプレート
 ## URL生成
 ## セッション 
+
+tableを作成
+```
+php artisan session:table
+```
+
+redisの設定
+`PhpRedis PHP拡張機能をインストール` or `Composerを介してpredis/predisパッケージ`
+PECLによりphpredisPHP拡張機能をインストールして使用することを推奨
+
+predis/predisパッケージの利用
+```
+composer require predis/predis
+```
+
+database.php
+```
+    'redis' => [
+
+        //'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => env('REDIS_CLIENT', 'predis'),
+```
+
+確認 (redis-cliコマンド)
+```
+keyを確認
+> keys *
+1) "laravel_database_laravel_cache:M2VPPqylkudxizdP4DceIvyzlsRS4TJWjYGTffnJ"
+
+値を確認
+> get "laravel_database_laravel_cache:M2VPPqylkudxizdP4DceIvyzlsRS4TJWjYGTffnJ"
+"s:179:\"a:3:{s:6:\"_token\";s:40:\"JyhxdT6rie3eBKluPcC5IZ5o5r8KMgiwtDlbtCCQ\";s:9:\"_previous\";a:1:{s:3:\"url\";s:21:\"http://127.0.0.1:8000\";}s:6:\"_flash\";a:2:{s:3:\"old\";a:0:{}s:3:\"new\";a:0:{}}}\";"
+
+```
+
 ## バリデーション
 ## エラー処理 
 
