@@ -1,4 +1,12 @@
-# LaravelアプリをAzureへのデプロイ
+# LaravelをAzureへのデプロイする
+
+運用環境向けの検証としてLaravelアプリの運用環境を検討してみました。
+コンテナでの運用
+選択肢として
+
+![image](./workingOnAzure.png)
+
+## 運用環境向けLaravel
 
 コンテナとしていろいろな場所へデプロイしてみる。
 
@@ -12,7 +20,7 @@ Azure Container Instance
 
 ## いろいろな場所へデプロイしてみる
 
-![image](./workingOnAzure.png)
+
 
 ### 1. Azure Virtual Machine
 ※手順は省略

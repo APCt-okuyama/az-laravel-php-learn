@@ -13,19 +13,21 @@ Azure Cache for Redis として フル マネージドのサービスとして�
 
 作成
 ```
+cache=example-redis-cache
+
 # Create a Basic C0 (256 MB) Redis Cache
 echo "Creating $cache"
-az redis create --name $cache --resource-group $resourceGroup --location "$location" --sku $sku --vm-size $size
+az redis create --name $cache --resource-group $RG_NAME --location $LOCATION --sku Basic --vm-size C0
 
 # Get details of an Azure Cache for Redis
 echo "Showing details of $cache"
-az redis show --name $cache --resource-group $resourceGroup 
+az redis show --name $cache --resource-group $RG_NAME 
 
 # Retrieve the hostname and ports for an Azure Redis Cache instance
-redis=($(az redis show --name $resourceGroup --resource-group $resourceGroup --query [hostName,enableNonSslPort,port,sslPort] --output tsv))
+redis=($(az redis show --name $cache --resource-group $RG_NAME --query [hostName,enableNonSslPort,port,sslPort] --output tsv))
 
 # Retrieve the keys for an Azure Redis Cache instance
-keys=($(az redis list-keys --name contosoCache --resource-group contosoGroup --query [primaryKey,secondaryKey] --output tsv))
+keys=($(az redis list-keys --name $cache --resource-group $RG_NAME --query [primaryKey,secondaryKey] --output tsv))
 
 # Display the retrieved hostname, keys, and ports
 echo "Hostname:" ${redis[0]}
@@ -39,5 +41,5 @@ echo "Secondary Key:" ${keys[1]}
 削除
 ```
 echo "Deleting $cache"
-az redis delete --name $resourceGroup --resource-group $resourceGroup -y
+az redis delete --name $cache --resource-group $RG_NAME -y
 ```

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Middleware\MyEnsureTokenIsValid;
 
+use App\Http\Controllers\MyTaskController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -74,3 +76,5 @@ Route::get('/myreq', function( Request $request ){
     return 'myreq is working';
 });
 
+Route::get('/mytask', [MyTaskController::class, 'index']);
+//Route::delete('/mytask', [MyTaskController::class, 'delete']);

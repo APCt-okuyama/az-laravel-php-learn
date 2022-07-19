@@ -6,7 +6,7 @@ Laravel (PHP)の基本的な利用方法とAzureで利用するときのトピ�
 ![image](./laravel.png)
 
 # Laravelに関する情報
-WEB上に十分な情報がありますが、基本的には公式のページを参照する。
+ネット上に膨大な情報がありますが、基本的には公式のページを参照する。
 https://readouble.com/laravel/
 日本語でのドキュメントもしっかりと整備されている。
 

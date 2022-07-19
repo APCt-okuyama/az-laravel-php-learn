@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
+use App\Http\Controllers\MyTaskController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -57,3 +59,5 @@ Route::post('/myapi', function (Request $request) {
 //     Log::info('my api start...'); 
 //     return 'my api start';
 // });
+
+Route::post('/mytask', [MyTaskController::class, 'store']);
