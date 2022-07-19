@@ -57,7 +57,7 @@ php:\<version>-apache　と　php-fpm の2パターンを試します。
 `php:7.4-apache` の `/var/www/html/` にソースコードを含めてイメージを作成します。
 ```
 cat Dockerfile
-FROM php:7.4-apache
+FROM php:8.1.1-apache
 :
 COPY ./ /var/www/html/
 :
@@ -65,8 +65,8 @@ COPY ./ /var/www/html/
 
 イメージを作成して起動して動作確認
 ```
-docker build -t acr001example/my-laravel-apache-app .
-docker run --rm -it -p 8080:80 acr001example/my-laravel-apache-app
+docker build -t acr001example/my-laravel-apache-app8 .
+docker run --rm -it -p 8080:80 acr001example/my-laravel-apache-app8
 ```
 
 .env ファイルを環境変数として渡す

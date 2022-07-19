@@ -1,4 +1,4 @@
-FROM php:7.4.3-fpm
+FROM php:8.1.1-fpm
 
 #
 # php:7.3-fpm 
@@ -17,7 +17,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # memo
 #RUN apt update && apt install -y procps
 #
-
-#laravel アプリのソースをコンテナイメージにコピー
+# laravel アプリのソースをコンテナイメージにコピー
+# .envに秘匿情報がはいっている場合は .dockerignore で除外します。
 COPY my-laravel-basic/ /var/www/html/
 RUN composer install
