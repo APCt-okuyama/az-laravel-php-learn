@@ -1,138 +1,82 @@
-# LaravelをAzureへのデプロイする
+# Laravel(コンテナ)をAzureへのデプロイする
 
-運用環境向けの検証としてLaravelアプリの運用環境を検討してみました。
-コンテナでの運用
-選択肢として
+![image](./Azure_Laravel.png)
+
+LaravelアプリをAzureへのデプロイします。
+コンテナ化することでデプロイ先を選択
+
+
+
+
+## Laravelのコンテナイメージについて
+LaravelにはWEB Serverが必要になります。
+1. Apapche
+1. Nginx
+がよく利用されます。
+
+イメージの作成方法はいろいろありますが、今回は2パターン試しました。
+
+### FROM php:7.4-apache の利用
+![image](./laravel_apache_cont_image.png)
+
+今回はApache含めたイメージ(FROM php:7.4-apache)をベースにしました。Apacheは php_module を介してLaravelにアクセスします。
+
+### FROM php:7.4.3-fpm の利用
+![image](./nginx_php-fpm.png)
+
+アプリケーションはRedisとMySQLにアクセスする単純なアプリを作成しました。
+
+php:7.4-apache を利用した dockerfile の例
+```
+FROM php:7.4-apache
+
+# 拡張 phpなど
+RUN apt update && apt install -y zlib1g-dev g++ libicu-dev zip libzip-dev zip libpq-dev \
+    && docker-php-ext-install intl opcache pdo_mysql \
+    && pecl install apcu \
+    && docker-php-ext-enable apcu \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install zip
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+#laravel アプリのソースをコンテナイメージにコピー
+COPY ./ /var/www/html/
+RUN composer install
+# .htaccess
+RUN a2enmod rewrite
+```
+## Laravelアプリのデプロイ先
+
+以下にデプロイしてみました。
+
+1. Azure Virtual Machine
+1. Azure App Service
+1. Azure Kubernetes Service
+1. Azure Container Instance
+1. Azure Container Apps
+
+※ 手順をすべて書くと長くなるので簡単に記載します。
+### 1. Azure Virtual Machine
+手順を簡単に記載。
+
+### 2. Azure App Service
+手順を簡単に記載。
+
+### 3. Azure Kubernetes Service
+手順を簡単に記載。
+
+### 4. Azure Container Instance
+手順を簡単に記載。
+
+### 5. Azure Container Apps
+
+手順を簡単に記載。
+
+### 6. Application Gatewayでロードバランシング
+Application Gatewayでロードバランシングしてモニタリングしてみる。
+
+ここまでを図にすると
 
 ![image](./workingOnAzure.png)
 
-## 運用環境向けLaravel
-
-コンテナとしていろいろな場所へデプロイしてみる。
-
-Azure Virtual Machine
-Azure App Service
-Azure Kubernetes Service
-Azure Container Instance
-
-## アプリの概要
-簡単なWEBアプリ
-
-## いろいろな場所へデプロイしてみる
-
-
-
-### 1. Azure Virtual Machine
-※手順は省略
-
-### 2. Azure App Service
-※手順は省略
-
-### 3. Azure Kubernetes Service
-※手順は省略
-
-### 4. Azure Container Instance
-
-ACRアクセス用のサービスプリンシパルを作成して Container Instance を作成します。
-
-以下手順
-```
-export AKV_NAME=my-example-laravel-key
-az keyvault create -g $RG_NAME -n $AKV_NAME
-
-サービスプリンシパルの作成
-ACR_NAME=acr001example
-# Create service principal
-az ad sp create-for-rbac \
-  --name http://$ACR_NAME-pull \
-  --scopes $(az acr show --name $ACR_NAME --query id --output tsv) \
-  --role acrpull
-
-SP_ID=d8df7acd-4486-4fd4-8512-3c808ef2500c # Replace with your service principal's appId
-
-# Store the registry *password* in the vault
-az keyvault secret set \
-  --vault-name $AKV_NAME \
-  --name $ACR_NAME-pull-pwd \
-  --value "q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY"
-  
-# Store service principal ID in vault (the registry *username*)
-az keyvault secret set \
-    --vault-name $AKV_NAME \
-    --name $ACR_NAME-pull-usr \
-    --value $(az ad sp show --id $SP_ID --query appId --output tsv)
-
-{
-  "appId": "d8df7acd-4486-4fd4-8512-3c808ef2500c",
-  "displayName": "http://acr001example-pull",
-  "password": "q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY",
-  "tenant": "4029eb38-8689-465c-92e1-9464066c814c"
-}
-
-az container create \
---resource-group $RG_NAME \
---name my-example-container \
---image acr001example.azurecr.io/my-laravel-apache-app \
---dns-name-label my-laravel-apache-app \
---ports 80
-
-ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group b-team-acr --query "loginServer" --output tsv)
-
-az container create \
-    --name my-example-aci-demo \
-    --resource-group $RG_NAME \
-    --image acr001example.azurecr.io/my-laravel-apache-app:v1 \
-    --registry-login-server acr001example.azurecr.io \
-    --registry-username $(az keyvault secret show --vault-name $AKV_NAME -n $ACR_NAME-pull-usr --query value -o tsv) \
-    --registry-password $(az keyvault secret show --vault-name $AKV_NAME -n $ACR_NAME-pull-pwd --query value -o tsv) \
-    --dns-name-label my-example-aci-demo \
-    --query ipAddress.fqdn
-```
-#### 確認
-```
-curl http://my-example-aci-demo.japaneast.azurecontainer.io
-:
-    <p>これはテスト用のページです。</p>
-:
-```
-### 5. Azure Container Apps
-
-ACRアクセス用のサービスプリンシパルを利用して Container Instance を作成します。
-
-拡張機能が必要
-```
-az extension add --name containerapp --upgrade
-
-RESOURCE_GROUP=az-laravel-example-rg
-LOCATION=japaneast
-CONTAINERAPPS_ENVIRONMENT="my-example-environment"
-
-az containerapp env create \
-  --name $CONTAINERAPPS_ENVIRONMENT \
-  --resource-group $RESOURCE_GROUP \
-  --location $LOCATION
-
-az acr login --name 
-
-CONTAINER_IMAGE_NAME=acr001example.azurecr.io/my-laravel-apache-app:v1
-REGISTRY_SERVER=acr001example.azurecr.io
-REGISTRY_USERNAME=d8df7acd-4486-4fd4-8512-3c808ef2500c
-REGISTRY_PASSWORD=q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY
-
-az containerapp create \
-  --name my-container-app \
-  --resource-group $RESOURCE_GROUP \
-  --image $CONTAINER_IMAGE_NAME \
-  --environment $CONTAINERAPPS_ENVIRONMENT \
-  --registry-server $REGISTRY_SERVER \
-  --registry-username $REGISTRY_USERNAME \
-  --registry-password $REGISTRY_PASSWORD
-```
-
-#### 確認
-```
-curl https://my-container-app.agreeablepond-0d5a3947.japaneast.azurecontainerapps.io/api/myapi2
-{"message":"myapi2 is working."}
-```
-
-6. Gateway
