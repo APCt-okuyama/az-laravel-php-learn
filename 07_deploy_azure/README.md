@@ -14,14 +14,49 @@ Azure Container Instance
 
 ![image](./workingOnAzure.png)
 
+app insightを作成
+```
+# workspaceの作成
+az monitor log-analytics workspace create --resource-group $RG_NAME --workspace-name my-example-workspace
+
+# app-insightsの作成
+az monitor app-insights component create --app my-example-app-insights --location $LOCATION --kind web -g $RG_NAME --workspace "/subscriptions/$SUBSCRIPTION/resourcegroups/$RG_NAME/providers/microsoft.operationalinsights/workspaces/my-example-workspace"
+```
+
 ### 1. Azure Virtual Machine
-※手順は省略
+
 
 ### 2. Azure App Service
-※手順は省略
+```
+az appservice plan create -g $RG_NAME -l $LOCATION -n my-example-app-plan --sku P1V2 --is-linux
+```
+
+```
+az webapp up --resource-group $RG_NAME --name my-example-laravel-app --location $LOCATION \
+-p my-example-app-plan \
+--sku P1V2 --runtime "php|7.4"
+```
+確認
+```
+curl https://my-example-laravel-app.azurewebsites.net
+curl https://my-example-laravel-app.azurewebsites.net/api/myapi2
+```
 
 ### 3. Azure Kubernetes Service
-※手順は省略
+```
+# AKSを準備してアプリをデプロイ
+az aks create -g $RG_NAME -n my-example-aks --enable-managed-identity --node-count 1 --enable-addons monitoring
+az aks get-credentials --resource-group $RG_NAME --name my-example-aks
+az aks update -n my-example-aks -g $RG_NAME --attach-acr acr001example
+kubectl apply -f my-deploy.yml
+```
+確認
+```
+kubectl get svc
+curl http://<EXTERNAL_IP>/
+curl http://<EXTERNAL_IP>/api/myapi2
+curl -X POST http://<EXTERNAL_IP>/api/myapi2
+```
 
 ### 4. Azure Container Instance
 

@@ -69,6 +69,11 @@ docker build -t acr001example/my-laravel-apache-app .
 docker run --rm -it -p 8080:80 acr001example/my-laravel-apache-app
 ```
 
+.env ファイルを環境変数として渡す
+```
+docker run --rm -it -p 8080:80 --env-file=.env acr001example/my-laravel-apache-app 
+```
+
 curlでアクセスできることを確認
 ```
 curl http://localhost:8080/ 
