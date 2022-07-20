@@ -1,32 +1,35 @@
-# Laravel(コンテナ)をAzureへのデプロイする
+# Laravel(コンテナ)をAzureへデプロイする
 
 ![image](./Azure_Laravel.png)
 
-LaravelアプリケーションをAzureへデプロイする方法について調査した結果をブログとして纏めておきます。
+Laravel アプリケーションを Azure へデプロイする方法について調査した結果をブログとして纏めておきます。
 
-Laraveにはdocker-composeを利用したSailと呼ばれる環境構築ツールがありますが、こちらはあくまで開発環境向けということで今回は本番・運用環境はどうするのかという観点での検証です。
+Laravel にはdocker-composeを利用したSailと呼ばれる環境構築ツールがありますが、こちらはあくまで開発環境向けということで今回は本番・運用環境はどうするのかという観点での検証です。
 
-## (簡単に) Laravel とは
+本ブログではコンテナ化することで様々な環境で動作することを確認してみようと思います。
+
+## PHP の Laravel とは
 
 Javaの`SpringBoot` や NodeJSの`express` などと同じようにWEBのフルスタックのフレームワーク。フルスタックのWEBアプリとしてだけでなく、APIサーバーとしても利用可能。
 
-(良いとこ)
+(良い点)
 WEB開発で必要なものが一通りそろっており日本語のドキュメントも非常に充実しています。
 よく利用されるRDB(MySQL,Postgres,SQLServer)やCache(Redis)を利用する仕組みが整っている。
 認証・認可の仕組みや並列処理を行うためのQueueの仕組みが整っている。
 
-(悪いとこ)
+(悪い点)
 特別悪いところは見当たらないが、ネットを検索していると他の言語に比べると処理が遅いという評価があるので、性能要件が極端に厳しいシステムには向いてなさそうですね(リアルタイム処理を求められる処理やIoTには向かない)。一般的なWEBのシステムでは問題ではないでしょう。
 
-## コンテナ化
-コンテナ化は必須ではないですが、スケーリングや開発環境の保守という観点で今回はコンテナ化します。
+## コンテナ化について
+必須ではないですが、スケーリングや開発環境の保守という観点で今回はコンテナ化します。
 
-本番・運用環境のLaravelにはWEB Serverが必要になり
+本番・運用環境のLaravelにはWEB Serverが必要になります。
 1. Apapche
 1. Nginx
-がよく利用されます。これらを含めたイメージを作成する必要があります。
+がよく利用されます。これらを含めたイメージを作成しました。
 
-作成方法はいろいろありますが、今回は2パターン（公式イメージを使った方法）を試しました。
+作成方法はいろいろありますが、今回は2パターン（php公式イメージを使った方法）を試しました。
+php公式イメージは[こちら](https://hub.docker.com/_/php)
 
 ### FROM php:x.x.x-apache の利用
 
@@ -52,19 +55,21 @@ RUN apt update && apt install -y zlib1g-dev g++ libicu-dev zip libzip-dev zip li
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # laravel アプリのソースをコンテナイメージにコピー
-# .envに秘匿情報がはいっている場合は .dockerignore で除外します。
+# 秘匿情報がはいっているファイル(.envなど)は .dockerignore で除外しておきます。
 COPY ./ /var/www/html/
 
-# laravel等のライブラリーのインストール
+# PHPライブラリー(laravel等)のインストール
 RUN composer install
+
 # .htaccess
 RUN a2enmod rewrite
 ```
 
 ### FROM php:x.x.x-fpm の利用
-Nginx と php:x.x.x-fpm を利用します。
+ベースイメージに nginx と php:x.x.x-fpm を利用します。
 ( FPM とは FastCGI Process Manager の略。Laravelアプリとの高速なプロセス間通信実現します。 )
-Nginxを含めたイメージと php-fpmを含めたイメージの２つを用意する。  
+
+下記の用にNginxを含めたイメージと php-fpmを含めたイメージの２つを用意する。  
 
 ![image](./nginx_php-fpm.png)
 Clientからのリクエスト(http)を受け取った Nginx は `fpm (TCP通信)` を介してLaravelにアクセスします。
@@ -76,21 +81,23 @@ FROM nginx:1.22-alpine
 COPY default.conf /etc/nginx/conf.d/default.conf
 ```
 
-nginxの設定の例  
-fastcgi_pass に php-fpm-server を指定
+nginxの設定の例  ★の箇所がポイント
 ```
+cat default.conf
 server {
 :
     location / {
+        # ★ すべてのリクエストが/index.phpに行くように設定
         try_files $uri $uri/ /index.php?$query_string;
     }
 :
     # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
     #
     location ~ \.php$ {
-        #rootをphp-fpmのroot
-        root           /var/www/html/public; ★ 
-        fastcgi_pass   php-fpm-server:9000;　★
+        # ★ rootをphp-fpmのroot
+        root           /var/www/html/public;  
+        # ★ 転送先のサーバーを指定
+        fastcgi_pass   php-fpm-server:9000;
         fastcgi_index  index.php;
         # $document_root を追加しています
         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
@@ -104,7 +111,7 @@ dockerfile の例 (`php:8.1.1-fpm` を利用)
 ```
 FROM php:8.1.1-fpm
 
-# 拡張 phpなど
+# 拡張 phpなど必要なものを入れます。
 RUN apt update && apt install -y zlib1g-dev g++ libicu-dev zip libzip-dev zip libpq-dev \
     && docker-php-ext-install intl opcache pdo_mysql \
     && pecl install apcu \
@@ -122,12 +129,13 @@ RUN composer install
 
 ## アプリケーション概要
 
-アプリケーションはRedisとMySQLにアクセスする単純なアプリを作成しました。
+アプリケーションはRedisとMySQLを利用した標準的なアプリ構成
+![image](./laravel-smple-app.png)
+session情報をRedisに格納し、アプリケーションデータをmysqlに格納します。
 
+## Laravelアプリケーションのデプロイ
 
-## Laravelアプリのデプロイ先
-
-以下にデプロイしてみました。
+Azureではコンテナの実行環境として複数あるのですが、以下の５つに php:x.x.x-apacheをベースにしたコンテナをデプロイしてみました。
 
 1. Azure Virtual Machine
 1. Azure App Service
@@ -135,27 +143,18 @@ RUN composer install
 1. Azure Container Instance
 1. Azure Container Apps
 
-※ 手順をすべて書くと長くなるので簡単に記載します。
-### 1. Azure Virtual Machine
-手順を簡単に記載。
+手順は[こちら](https://github.com/APCt-okuyama/az-laravel-php-learn/tree/main/07_deploy_azure)。それぞれのアプリにclient(CURLコマンド)から問題なくhttpでアクセスでることが確認できました。
 
-### 2. Azure App Service
-手順を簡単に記載。
-
-### 3. Azure Kubernetes Service
-手順を簡単に記載。
-
-### 4. Azure Container Instance
-手順を簡単に記載。
-
-### 5. Azure Container Apps
-
-手順を簡単に記載。
-
-### 6. Application Gatewayでロードバランシング
-Application Gatewayでロードバランシングしてモニタリングしてみる。
-
-ここまでを図にすると
-
+# まとめ
+今回試した環境を図にするとこうなります。
 ![image](./workingOnAzure.png)
+コンテナ化することで運用環境の選択肢が
+
+
+
+# (追加) Application Gatewayでロードバランシング
+Gateway として Application Gateway を入れて少し性能的な評価をした結果
+
+ここまでを図にするとこうなり、
+![image](./workingOnAzure2.png)
 

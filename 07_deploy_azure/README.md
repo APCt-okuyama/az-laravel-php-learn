@@ -25,31 +25,49 @@ az monitor app-insights component create --app my-example-app-insights --locatio
 
 ### 1. Azure Virtual Machine
 
+linux に dockerをインストールしてコンテナを実行する
+
+```
+az vm create \
+    --resource-group $RG_NAME \
+    --name example-vm-ubuntu \
+    --image UbuntuLTS \
+    --admin-username <USERNAME> \
+    --admin-password <PASSWORD>
+```
+
+```
+docker run -d -p 80:80 acr001example/my-laravel-apache-app
+```
 
 ### 2. Azure App Service
+コードからデプロイする方法とDockerコンテナー(カスタムコンテナ)をデプロイする方法の２種類あります。
+コードからデプロイする方法の場合、OSにLinuxを選択してPHPのランタイムスタックは「8.0」「7.4」
+![image](./php-appservice-runtime.PNG)
 ```
 az appservice plan create -g $RG_NAME -l $LOCATION -n my-example-app-plan --sku P1V2 --is-linux
+
+az webapp up --resource-group $RG_NAME --name my-example-laravel-app \
+  --location $LOCATION -p my-example-app-plan --sku P1V2 --runtime "php|7.4"
 ```
 
-```
-az webapp up --resource-group $RG_NAME --name my-example-laravel-app --location $LOCATION \
--p my-example-app-plan \
---sku P1V2 --runtime "php|7.4"
-```
 確認
 ```
 curl https://my-example-laravel-app.azurewebsites.net
+curl -X POST -d "" https://my-example-laravel-app.azurewebsites.net/api/myapi
 curl https://my-example-laravel-app.azurewebsites.net/api/myapi2
 ```
 
 ### 3. Azure Kubernetes Service
+
+AKSを準備してアプリをデプロイ
 ```
-# AKSを準備してアプリをデプロイ
 az aks create -g $RG_NAME -n my-example-aks --enable-managed-identity --node-count 1 --enable-addons monitoring
 az aks get-credentials --resource-group $RG_NAME --name my-example-aks
 az aks update -n my-example-aks -g $RG_NAME --attach-acr acr001example
 kubectl apply -f my-deploy.yml
 ```
+
 確認
 ```
 kubectl get svc
@@ -62,12 +80,11 @@ curl -X POST http://<EXTERNAL_IP>/api/myapi2
 
 ACRアクセス用のサービスプリンシパルを作成して Container Instance を作成します。
 
-以下手順
 ```
 export AKV_NAME=my-example-laravel-key
 az keyvault create -g $RG_NAME -n $AKV_NAME
 
-サービスプリンシパルの作成
+# サービスプリンシパルの作成
 ACR_NAME=acr001example
 # Create service principal
 az ad sp create-for-rbac \
@@ -81,27 +98,13 @@ SP_ID=d8df7acd-4486-4fd4-8512-3c808ef2500c # Replace with your service principal
 az keyvault secret set \
   --vault-name $AKV_NAME \
   --name $ACR_NAME-pull-pwd \
-  --value "q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY"
+  --value "<PASSWORD>"
   
 # Store service principal ID in vault (the registry *username*)
 az keyvault secret set \
     --vault-name $AKV_NAME \
     --name $ACR_NAME-pull-usr \
     --value $(az ad sp show --id $SP_ID --query appId --output tsv)
-
-{
-  "appId": "d8df7acd-4486-4fd4-8512-3c808ef2500c",
-  "displayName": "http://acr001example-pull",
-  "password": "q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY",
-  "tenant": "4029eb38-8689-465c-92e1-9464066c814c"
-}
-
-az container create \
---resource-group $RG_NAME \
---name my-example-container \
---image acr001example.azurecr.io/my-laravel-apache-app \
---dns-name-label my-laravel-apache-app \
---ports 80
 
 ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group b-team-acr --query "loginServer" --output tsv)
 
@@ -126,22 +129,19 @@ curl http://my-example-aci-demo.japaneast.azurecontainer.io
 
 ACRアクセス用のサービスプリンシパルを利用して Container Instance を作成します。
 
-拡張機能が必要
 ```
-az extension add --name containerapp --upgrade
-
 RESOURCE_GROUP=az-laravel-example-rg
 LOCATION=japaneast
-CONTAINERAPPS_ENVIRONMENT="my-example-environment"
+CONTAINERAPPS_ENVIRONMENT="my-example-containerapp-env"
 
 az containerapp env create \
   --name $CONTAINERAPPS_ENVIRONMENT \
   --resource-group $RESOURCE_GROUP \
   --location $LOCATION
 
-az acr login --name 
+az acr login --name acr001example
 
-CONTAINER_IMAGE_NAME=acr001example.azurecr.io/my-laravel-apache-app:v1
+CONTAINER_IMAGE_NAME=acr001example.azurecr.io/my-laravel-apache-app8:v1
 REGISTRY_SERVER=acr001example.azurecr.io
 REGISTRY_USERNAME=d8df7acd-4486-4fd4-8512-3c808ef2500c
 REGISTRY_PASSWORD=q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY
@@ -157,9 +157,28 @@ az containerapp create \
 ```
 
 #### 確認
+ContainerAppsのイングレスの設定が必要
 ```
-curl https://my-container-app.agreeablepond-0d5a3947.japaneast.azurecontainerapps.io/api/myapi2
+curl https://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io
+curl https://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io/api/myapi2
 {"message":"myapi2 is working."}
+curl -X POST -d "" https://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io/api/mytask
 ```
 
-6. Gateway
+### 6. Gateway
+
+vnet, subnet, pip, application gatewayを作成します。
+
+```
+az network vnet create --name myVNet --resource-group $RG_NAME --location $LOCATION \
+  --address-prefix 10.21.0.0/16 --subnet-name myAGSubnet --subnet-prefix 10.21.0.0/24
+az network vnet subnet create --name myBackendSubnet --resource-group $RG_NAME \
+  --vnet-name myVNet --address-prefix 10.21.1.0/24
+az network public-ip create --resource-group $RG_NAME \
+  --name myAGPublicIPAddress --allocation-method Static --sku Standard
+
+az network application-gateway create --name myAppGateway --location $LOCATION --resource-group $RG_NAME \
+  --capacity 1 --sku Standard_v2 --public-ip-address myAGPublicIPAddress --vnet-name myVNet --subnet myAGSubnet --priority 1000 
+```
+
+#### ルーティング設定

@@ -16,7 +16,8 @@ spec:
         "kubernetes.io/os": linux
       containers:
       - name: laravel-app-apache
-        image: acr001example.azurecr.io/my-laravel-apache-app:v2
+        image: acr001example.azurecr.io/my-laravel-apache-app8:v1
+        imagePullPolicy: Always
         # env:
         # - name: ALLOW_EMPTY_PASSWORD
         #   value: "yes"
