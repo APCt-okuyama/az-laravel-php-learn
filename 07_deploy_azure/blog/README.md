@@ -144,25 +144,27 @@ Azureではコンテナの実行環境として複数あるのですが、以下
 1. Azure Container Instance
 1. Azure Container Apps
 
-手順は[こちら](https://github.com/APCt-okuyama/az-laravel-php-learn/tree/main/07_deploy_azure)。それぞれのアプリにclient(CURLコマンド)から問題なくhttpでアクセスでることが確認できました。
+手順を記載すると長くなってしまうので、[こちら](https://github.com/APCt-okuyama/az-laravel-php-learn/tree/main/07_deploy_azure)に纏めておきます。  
+それぞれのアプリにclientから問題なくhttpでアクセスできるところまで確認しました。
 
 # まとめ
 
-今回、試した環境を図にするとこうなります。
+今回、検証で作成した環境は最終的に以下のようになりました。
+コンテナ化するのに少し時間がかかりました（調査含めて２，３日くらい）が、コンテナ化さえしてしまえばそれほど手間をかけずにいろいろ環境を構築できます。
+どのサービスも運用環境として利用することは可能だと思いますが、あえて一つお勧めするなら管理が簡単な App Service (カスタムコンテナ) が良いのではないかと思いました。
 
 ![image](./workingOnAzure.png)
-コンテナ化することで運用環境の選択肢が
 
 # (おまけ)　簡単にパフォーマンスを確認
 
-以下のようにロードバランサーとして Application Gateway を配置して、少し負荷をかけてみました。
+ロードバランサーとして Application Gateway を配置して、少し負荷をかけてみました。
 ![image](./workingOnAzure2.png)
 
-## １万リクエストを処理
-処理内容は DBへの単純なインサート
-JMeterを使って１万リクエスト(20 thread 500 requests)を投げた結果は約 5分くらいで完了。
+## １万リクエスト
+処理内容は テーブルに単純に１レコード追加するだけの処理。
+JMeterを使って１万リクエスト(20 thread 500 requests)を投入、結果は約 5分くらいで完了。
 
-insertされたレコードの件数を数えてみるとそれぞれ均等に処理されることが確認できました。
+追加されたレコードの件数を数えてみるとそれぞれ均等に処理されることが確認できました。
 ```
 mysql> select count(*), remark from mytask group by remark;
 +----------+--------------------------------------------+
@@ -176,6 +178,7 @@ mysql> select count(*), remark from mytask group by remark;
 4 rows in set (0.05 sec)
 ```
 ※remarkはhostname
+※ホスト名がそれぞれのサービスで違います。
 
 ## throttle:api
 連続してリクエストを投げてみたところ「429 Too Many Requests」となり調べてみるとLaravelの流量制御(throttle:api)が効いていました。
