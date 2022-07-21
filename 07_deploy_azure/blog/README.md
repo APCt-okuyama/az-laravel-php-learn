@@ -2,37 +2,47 @@
 
 ![image](./Azure_Laravel.png)
 
+# はじめに
+こんにちは、ACS事業部の奥山です。
+
 Laravel アプリケーションを Azure へデプロイする方法について調査した結果をブログとして纏めておきます。
 
 Laravel にはdocker-composeを利用したSailと呼ばれる環境構築ツールがありますが、こちらはあくまで開発環境向けということで今回は本番・運用環境はどうするのかという観点での検証です。
 
-本ブログではコンテナ化することで様々な環境で動作することを確認してみようと思います。
+本ブログではLaravelアプリケーションをコンテナ化してAzureのいろいろなサービスで動作することを確認してみようと思います。
 
-## PHP の Laravel とは
+## まず、PHP の Laravel とは
 
 Javaの`SpringBoot` や NodeJSの`express` などと同じようにWEBのフルスタックのフレームワーク。フルスタックのWEBアプリとしてだけでなく、APIサーバーとしても利用可能。
 
 (良い点)
 WEB開発で必要なものが一通りそろっており日本語のドキュメントも非常に充実しています。
 よく利用されるRDB(MySQL,Postgres,SQLServer)やCache(Redis)を利用する仕組みが整っている。
-認証・認可の仕組みや並列処理を行うためのQueueの仕組みが整っている。
+認証・認可の仕組みや並列処理を行うためのQueueの仕組みなどが整っている。
 
 (悪い点)
 特別悪いところは見当たらないが、ネットを検索していると他の言語に比べると処理が遅いという評価があるので、性能要件が極端に厳しいシステムには向いてなさそうですね(リアルタイム処理を求められる処理やIoTには向かない)。一般的なWEBのシステムでは問題ではないでしょう。
 
+## Laravelのアプリケーションについて
+
+動作確認用のアプリケーションはRedisとMySQLを利用した標準的な構成にしました。
+![image](./laravel-smple-app.png)
+session情報をRedisに格納し、アプリケーションデータをmysqlに格納します。
+ローカル環境で作成し動作確認までを行います。
+
 ## コンテナ化について
 
-必須ではないですが、スケーリングや開発環境の保守という観点で今回はコンテナ化します。
+コンテナ化自体は必須ではないですが、スケーリングや開発環境の保守という観点で今回はコンテナ化します。
 
 本番・運用環境のLaravelにはWEB Serverが必要になります。
-1. Apapche
-1. Nginx
+1. Apapche  
+1. Nginx  
 がよく利用されます。これらを含めたイメージを作成しました。
 
-作成方法はいろいろありますが、今回は2パターン（php公式イメージを使った方法）を試しました。
-php公式イメージは[こちら](https://hub.docker.com/_/php)
+作成方法はいろいろありますが、今回は２つのパターン（php公式イメージを使った方法）を試しました。
+php公式イメージは[こちら](https://hub.docker.com/_/php)で確認できます。
 
-### FROM php:x.x.x-apache の利用
+### (公式)FROM php:x.x.x-apache の利用
 
 Apacheを含めたイメージ(FROM php:8.1.1-apache)をベースにして、
 Laravelのソースコード全体をコンテナに含めます。  
@@ -66,11 +76,11 @@ RUN composer install
 RUN a2enmod rewrite
 ```
 
-### FROM php:x.x.x-fpm の利用
+### (公式)FROM php:x.x.x-fpm の利用
 ベースイメージに nginx と php:x.x.x-fpm を利用します。
-( FPM とは FastCGI Process Manager の略。Laravelアプリとの高速なプロセス間通信を実現します。 )
+( FPM とは FastCGI Process Manager の略。Laravelアプリとの高速なプロセス間通信を実現。)
 
-下記の用にNginxを含めたイメージと php-fpmを含めたイメージの２つを用意する。  
+以下のようにNginxを含めたイメージと php-fpmを含めたイメージの２つ作成します。  
 
 ![image](./nginx_php-fpm.png)
 Clientからのリクエスト(http)を受け取った Nginx は `fpm (TCP通信)` を介してLaravelにアクセスします。
@@ -95,12 +105,11 @@ server {
     # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
     #
     location ~ \.php$ {
-        # ★ rootをphp-fpmのroot
+        # ★ rootを追加 php-fpmのroot
         root           /var/www/html/public;  
         # ★ 転送先のサーバーを指定
         fastcgi_pass   php-fpm-server:9000;
-        fastcgi_index  index.php;
-        # $document_root を追加しています
+        fastcgi_index  index.php;        
         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
         include        fastcgi_params;
     }
@@ -128,12 +137,6 @@ COPY my-laravel-basic/ /var/www/html/
 RUN composer install
 ```
 
-## アプリケーションについて
-
-アプリケーションはRedisとMySQLを利用した標準的なアプリ構成
-![image](./laravel-smple-app.png)
-session情報をRedisに格納し、アプリケーションデータをmysqlに格納します。
-
 ## Laravelアプリケーションのデプロイ
 
 Azureではコンテナの実行環境として複数あるのですが、以下の５つに php:x.x.x-apacheをベースにしたコンテナをデプロイしてみました。
@@ -151,7 +154,7 @@ Azureではコンテナの実行環境として複数あるのですが、以下
 
 今回、検証で作成した環境は最終的に以下のようになりました。
 コンテナ化するのに少し時間がかかりました（調査含めて２，３日くらい）が、コンテナ化さえしてしまえばそれほど手間をかけずにいろいろ環境を構築できます。
-どのサービスも運用環境として利用することは可能だと思いますが、あえて一つお勧めするなら管理が簡単な App Service (カスタムコンテナ) が良いのではないかと思いました。
+どのサービスも運用環境として利用することは可能だと思いますが、あえて一つお勧めするなら管理が簡単な App Service (カスタムコンテナ) が手軽にはじめられて良いのではないかと思います。
 
 ![image](./workingOnAzure.png)
 
@@ -195,3 +198,12 @@ cat RouteServiceProvider.php
     }
 ```
 Laravelにはこのように流量制御なども基本的な機能として準備されているのが良いところですね。
+
+# おわりに
+
+私達ACS事業部はAzure・AKSを活用した内製化のご支援をしております。ご相談等ありましたらぜひご連絡ください。
+
+また、一緒に働いていただける仲間も募集中です！   
+切磋琢磨しながらスキルを向上できる、エンジニアには良い環境だと思います。ご興味を持っていただけたら嬉しく思います。
+
+[https://www.ap-com.co.jp/recruit/info/requirements.html:embed:cite]
