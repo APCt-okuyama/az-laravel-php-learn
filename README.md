@@ -17,7 +17,7 @@ export LOCATION=japaneast
 az group create -n $RG_NAME -l $LOCATION
 ```
 
-## 使わないリソースは削除しましょう
+## 終わったらリソースは削除しましょう
 ```
 echo $RG_NAME
 az group delete -n $RG_NAME -y

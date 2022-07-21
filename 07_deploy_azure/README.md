@@ -42,7 +42,8 @@ docker run -d -p 80:80 acr001example/my-laravel-apache-app
 
 ### 2. Azure App Service
 コードからデプロイする方法とDockerコンテナー(カスタムコンテナ)をデプロイする方法の２種類あります。
-コードからデプロイする方法の場合、OSにLinuxを選択してPHPのランタイムスタックは「8.0」「7.4」
+#### コードからデプロイする
+OSにLinuxを選択してPHPのランタイムスタックは「8.0」「7.4」
 ![image](./php-appservice-runtime.PNG)
 ```
 az appservice plan create -g $RG_NAME -l $LOCATION -n my-example-app-plan --sku P1V2 --is-linux
@@ -58,6 +59,44 @@ curl -X POST -d "" https://my-example-laravel-app.azurewebsites.net/api/myapi
 curl https://my-example-laravel-app.azurewebsites.net/api/myapi2
 ```
 
+### カスタムコンテナをデプロイする (ACRから)
+```
+# plan
+az appservice plan create -g $RG_NAME -l $LOCATION -n my-example-app-plan --sku P1V2 --is-linux
+
+# app servcie 作成
+az webapp create -g $RG_NAME --plan my-example-app-plan -n app-svc-laravel-container \
+  --deployment-container-image-name acr001example.azurecr.io/my-laravel-apache-app8:v1
+
+# マネージド IDを有効にする
+managedid=$(az webapp identity assign --resource-group $RG_NAME --name app-svc-laravel-container --query principalId --output tsv)
+
+# ACRのIDを取得
+acr_id=$(az acr show --resource-group b-team-acr --name acr001example --query id --output tsv)
+
+# マネージド ID に ACRへのアクセス許可
+az role assignment create --assignee $managedid --scope $acr_id --role "AcrPull"
+
+# マネージ ID を使用して Azure Container Registry からプルする設定
+az webapp config set --resource-group $RG_NAME --name app-svc-laravel-container \
+  --generic-configurations '{"acrUseManagedIdentityCreds": true}'
+```
+※デプロイ(docker pull)に少し時間がかかります。Logをみながら少し待つ。
+
+####イメージを更新して再デプロイ
+イメージを更新した場合は以下のコマンドで再デプロイ ※tagとか変更する　
+```
+az webapp config container set --name app-svc-laravel-container --resource-group $RG_NAME \
+  --docker-custom-image-name acr001example.azurecr.io/my-laravel-apache-app8:v2
+```
+強制的にPullしなおす方法については別途調べる。
+
+確認
+```
+curl https://app-svc-laravel-container.azurewebsites.net
+curl -X POST https://app-svc-laravel-container.azurewebsites.net/api/mytask
+```
+
 ### 3. Azure Kubernetes Service
 
 AKSを準備してアプリをデプロイ
@@ -65,6 +104,7 @@ AKSを準備してアプリをデプロイ
 az aks create -g $RG_NAME -n my-example-aks --enable-managed-identity --node-count 1 --enable-addons monitoring
 az aks get-credentials --resource-group $RG_NAME --name my-example-aks
 az aks update -n my-example-aks -g $RG_NAME --attach-acr acr001example
+kubectl apply -f lb.yml
 kubectl apply -f my-deploy.yml
 ```
 
@@ -92,7 +132,7 @@ az ad sp create-for-rbac \
   --scopes $(az acr show --name $ACR_NAME --query id --output tsv) \
   --role acrpull
 
-SP_ID=d8df7acd-4486-4fd4-8512-3c808ef2500c # Replace with your service principal's appId
+SP_ID=xxxxxxxxxx # Replace with your service principal's appId
 
 # Store the registry *password* in the vault
 az keyvault secret set \
@@ -111,7 +151,7 @@ ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group b-team-acr --qu
 az container create \
     --name my-example-aci-demo \
     --resource-group $RG_NAME \
-    --image acr001example.azurecr.io/my-laravel-apache-app:v1 \
+    --image acr001example.azurecr.io/my-laravel-apache-app8:v1 \
     --registry-login-server acr001example.azurecr.io \
     --registry-username $(az keyvault secret show --vault-name $AKV_NAME -n $ACR_NAME-pull-usr --query value -o tsv) \
     --registry-password $(az keyvault secret show --vault-name $AKV_NAME -n $ACR_NAME-pull-pwd --query value -o tsv) \
@@ -139,12 +179,10 @@ az containerapp env create \
   --resource-group $RESOURCE_GROUP \
   --location $LOCATION
 
-az acr login --name acr001example
-
 CONTAINER_IMAGE_NAME=acr001example.azurecr.io/my-laravel-apache-app8:v1
 REGISTRY_SERVER=acr001example.azurecr.io
-REGISTRY_USERNAME=d8df7acd-4486-4fd4-8512-3c808ef2500c
-REGISTRY_PASSWORD=q7n8Q~0yH29rZJWtV-4ehXYCQKJ~d_D0enrq2dxY
+REGISTRY_USERNAME=<SP_ID> # 置き換える
+REGISTRY_PASSWORD=<PASSWORD> # 置き換える
 
 az containerapp create \
   --name my-container-app \
@@ -156,14 +194,33 @@ az containerapp create \
   --registry-password $REGISTRY_PASSWORD
 ```
 
-#### 確認
-ContainerAppsのイングレスの設定が必要
+`--allow-insecure` を指定してhttpのリクエストを許可する (確認用)
 ```
+az containerapp ingress enable -n my-container-app -g $RG_NAME \
+    --type external --allow-insecure --target-port 80 --transport auto
+```
+
+外部からアクセスするためにPortlからContainerAppsのイングレスの設定を行う
+
+#### 確認
+
+```
+curl https://my-container-app.bravefield-bc709266.japaneast.azurecontainerapps.io
+curl http://my-container-app.bravefield-bc709266.japaneast.azurecontainerapps.io
+curl -X POST http://my-container-app.bravefield-bc709266.japaneast.azurecontainerapps.io/api/mytask
+
+curl http://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io
 curl https://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io
 curl https://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io/api/myapi2
 {"message":"myapi2 is working."}
 curl -X POST -d "" https://my-container-app.lemongrass-21a26a41.japaneast.azurecontainerapps.io/api/mytask
 ```
+
+log stream
+```
+az containerapp logs show --name my-container-app --resource-group $RG_NAME --tail 50
+```
+az containerapp exec --name my-container-app --resource-group $RG_NAME
 
 ### 6. Gateway
 

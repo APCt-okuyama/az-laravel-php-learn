@@ -45,9 +45,10 @@ class MyTaskController extends Controller
         //
         $task = new MyTask;
         $task->name = "aaa";
-        $task->remark = "bbb";
+        $task->remark = gethostname();
         $task->txid = uniqid();
         $task->save();
+        return "working fine:) Plz confirm select * from mytask;";
     }
 
     /**

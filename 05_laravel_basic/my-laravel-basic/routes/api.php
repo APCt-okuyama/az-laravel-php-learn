@@ -51,7 +51,7 @@ Route::post('/myapi', function (Request $request) {
     //     'message' => 'api is working.',
     //     Response::HTTP_OK
     // ]);
-    return ['message' => 'api is working2.'];
+    return ['message' => 'api is working.'];
 });
 
 // Route::get('/myapi', function () {

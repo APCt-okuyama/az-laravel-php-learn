@@ -1,4 +1,4 @@
-# Laravel(コンテナ)をAzureへデプロイする
+# Laravelアプリ(コンテナ)をAzureへデプロイする
 
 ![image](./Azure_Laravel.png)
 
@@ -21,6 +21,7 @@ WEB開発で必要なものが一通りそろっており日本語のドキュ�
 特別悪いところは見当たらないが、ネットを検索していると他の言語に比べると処理が遅いという評価があるので、性能要件が極端に厳しいシステムには向いてなさそうですね(リアルタイム処理を求められる処理やIoTには向かない)。一般的なWEBのシステムでは問題ではないでしょう。
 
 ## コンテナ化について
+
 必須ではないですが、スケーリングや開発環境の保守という観点で今回はコンテナ化します。
 
 本番・運用環境のLaravelにはWEB Serverが必要になります。
@@ -67,7 +68,7 @@ RUN a2enmod rewrite
 
 ### FROM php:x.x.x-fpm の利用
 ベースイメージに nginx と php:x.x.x-fpm を利用します。
-( FPM とは FastCGI Process Manager の略。Laravelアプリとの高速なプロセス間通信実現します。 )
+( FPM とは FastCGI Process Manager の略。Laravelアプリとの高速なプロセス間通信を実現します。 )
 
 下記の用にNginxを含めたイメージと php-fpmを含めたイメージの２つを用意する。  
 
@@ -127,7 +128,7 @@ COPY my-laravel-basic/ /var/www/html/
 RUN composer install
 ```
 
-## アプリケーション概要
+## アプリケーションについて
 
 アプリケーションはRedisとMySQLを利用した標準的なアプリ構成
 ![image](./laravel-smple-app.png)
@@ -146,15 +147,31 @@ Azureではコンテナの実行環境として複数あるのですが、以下
 手順は[こちら](https://github.com/APCt-okuyama/az-laravel-php-learn/tree/main/07_deploy_azure)。それぞれのアプリにclient(CURLコマンド)から問題なくhttpでアクセスでることが確認できました。
 
 # まとめ
-今回試した環境を図にするとこうなります。
+
+今回、試した環境を図にするとこうなります。
+
 ![image](./workingOnAzure.png)
 コンテナ化することで運用環境の選択肢が
 
+# (おまけ)　簡単なパフォーマンス負荷試験
 
-
-# (追加) Application Gatewayでロードバランシング
-Gateway として Application Gateway を入れて少し性能的な評価をした結果
-
-ここまでを図にするとこうなり、
+以下のようにロードバランサーとして Application Gateway を配置して、少し負荷をかけてみました。
 ![image](./workingOnAzure2.png)
 
+目標は１万リクエスト(10 thread 1000 request)
+
+## throttle:api
+JMeterから100件連続してリクエストを投げてみたところ「429 Too Many Requests」となり調べてみるとLaravelの流量制御(throttle:api)が効いていました。
+
+設定を変更することで調整可能。
+```
+cat RouteServiceProvider.php
+    protected function configureRateLimiting()
+    {
+        RateLimiter::for('api', function (Request $request) {
+            //return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+            return Limit::perMinute(60*10)->by(optional($request->user())->id ?: $request->ip());            
+        });
+    }
+```
+Laravelにはこのように流量制御なども基本的な機能として準備されているのが良いところですね。

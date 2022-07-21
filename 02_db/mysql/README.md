@@ -10,13 +10,12 @@ az mysql server create --resource-group $RG_NAME \
 sku = GP_Gen5_2 (192.17USD/月)
 
 
-ローカルからの接続許可 (必要であれば)
+ローカルPCからの接続許可 (必要であれば)
 ```
 az mysql server firewall-rule create --resource-group $RG_NAME \
 --server example-mysql-server \
 --name AllowMyIP \
---start-ip-address 192.168.198.75 \
---end-ip-address 192.168.198.75
+--start-ip-address 192.168.1.75 --end-ip-address 192.168.1.75
 ```
 
 DBの作成 (適当に3つくらい作成)
@@ -30,7 +29,7 @@ az mysql db create --resource-group $RG_NAME --server-name example-mysql-server 
 
 接続
 ```
-mysql -h example-mysql-server.mysql.database.azure.com -u myadmin@example-mysql-server -p
+mysql -h example-mysql-server.mysql.database.azure.com -u apcuser@example-mysql-server -p
 mysql> 
 ```
 

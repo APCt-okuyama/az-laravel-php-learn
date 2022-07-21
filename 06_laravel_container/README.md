@@ -125,10 +125,12 @@ docker images
 REPOSITORY                            TAG                    IMAGE ID       CREATED             SIZE
 acr001example/my-laravel-apache-app   latest                 6f1f9bd0f454   About an hour ago   574MB
 ```
+
+ACRへPush
 ```
 az acr login --name acr001example 
-az acr build -g b-team-acr --image my-laravel-apache-app:v1 --registry acr001example --file Dockerfile .
-docker push acr001example/my-laravel-apache-app
+# BuildとPushを行います。
+az acr build -g b-team-acr --image my-laravel-apache-app8:v1 --registry acr001example --file Dockerfile .
 ```
 
 ## PHP-FPM image
