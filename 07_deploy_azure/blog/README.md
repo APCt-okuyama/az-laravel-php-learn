@@ -153,15 +153,32 @@ Azureではコンテナの実行環境として複数あるのですが、以下
 ![image](./workingOnAzure.png)
 コンテナ化することで運用環境の選択肢が
 
-# (おまけ)　簡単なパフォーマンス負荷試験
+# (おまけ)　簡単にパフォーマンスを確認
 
 以下のようにロードバランサーとして Application Gateway を配置して、少し負荷をかけてみました。
 ![image](./workingOnAzure2.png)
 
-目標は１万リクエスト(10 thread 1000 request)
+## １万リクエストを処理
+処理内容は DBへの単純なインサート
+JMeterを使って１万リクエスト(20 thread 500 requests)を投げた結果は約 5分くらいで完了。
+
+insertされたレコードの件数を数えてみるとそれぞれ均等に処理されることが確認できました。
+```
+mysql> select count(*), remark from mytask group by remark;
++----------+--------------------------------------------+
+| count(*) | remark                                     |
++----------+--------------------------------------------+
+|     2500 | ce0b546c9de9                               |app service
+|     2499 | laravel-app-apache-db4d68cf-6h2bs          |aks
+|     2501 | my-container-app--yiv5488-6878f5768c-tl4k9 |container apps
+|     2500 | SandboxHost-637939684234638543             |container instance
++----------+--------------------------------------------+
+4 rows in set (0.05 sec)
+```
+※remarkはhostname
 
 ## throttle:api
-JMeterから100件連続してリクエストを投げてみたところ「429 Too Many Requests」となり調べてみるとLaravelの流量制御(throttle:api)が効いていました。
+連続してリクエストを投げてみたところ「429 Too Many Requests」となり調べてみるとLaravelの流量制御(throttle:api)が効いていました。
 
 設定を変更することで調整可能。
 ```
