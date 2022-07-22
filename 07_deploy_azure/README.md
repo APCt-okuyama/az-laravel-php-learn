@@ -14,15 +14,6 @@ Azure Container Instance
 
 ![image](./workingOnAzure.png)
 
-app insightを作成
-```
-# workspaceの作成
-az monitor log-analytics workspace create --resource-group $RG_NAME --workspace-name my-example-workspace
-
-# app-insightsの作成
-az monitor app-insights component create --app my-example-app-insights --location $LOCATION --kind web -g $RG_NAME --workspace "/subscriptions/$SUBSCRIPTION/resourcegroups/$RG_NAME/providers/microsoft.operationalinsights/workspaces/my-example-workspace"
-```
-
 ### 1. Azure Virtual Machine
 
 linux に dockerをインストールしてコンテナを実行する
