@@ -1,0 +1,22 @@
+{
+    "short_name": "my-example-pwa",
+    "name": "apc dev.",
+    "icons": [
+      {
+        "src": "ic_launcher48x48.png",
+        "type": "image/png",
+        "sizes": "48x48"
+      },
+      {
+        "src": "ic_launcher96x96.png",
+        "type": "image/png",
+        "sizes": "96x96"
+      },
+      {
+        "src": "ic_launcher192x192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      }
+    ],
+    "start_url": "/"
+  }

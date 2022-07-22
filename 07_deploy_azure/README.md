@@ -238,4 +238,9 @@ az network application-gateway create --name myAppGateway --location $LOCATION -
   --capacity 1 --sku Standard_v2 --public-ip-address myAGPublicIPAddress --vnet-name myVNet --subnet myAGSubnet --priority 1000 
 ```
 
-#### ルーティング設定
+#### Application Gateway設定
+バックエンド設定で「新しいホスト名でオーバーライドする」※App Service用
+![iamge](./appGW-settingforAppService.PNG)
+
+バックエンドプールに設定
+![image](./appGW-BackendPool.PNG)
