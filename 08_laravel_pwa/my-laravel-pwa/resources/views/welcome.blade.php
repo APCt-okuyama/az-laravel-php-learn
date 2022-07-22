@@ -7,9 +7,12 @@
 </head>
 
 <body>
-    <h1>これは Progressive Web Apps のテストです。</h1>
+    
+    <h1>これは PWA のテストです。</h1>
 
-    <h1>アプリのようにインストールできます。</h1>
+    <h1>インストールできます。</h1>
+
+    <h1>サーバーが停止していても動きます。</h1>
 
     <script>
         if('serviceWorker' in navigator) {
