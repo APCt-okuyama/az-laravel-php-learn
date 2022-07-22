@@ -1,7 +1,5 @@
 const mix = require('laravel-mix');
 
-require('laravel-mix-workbox');
-//const workboxPlugin = require('workbox-webpack-plugin');
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
@@ -17,13 +15,3 @@ mix.js('resources/js/app.js', 'public/js')
     .postCss('resources/css/app.css', 'public/css', [
         //
     ]);
-
-mix.webpackConfig({
-    plugins: [
-        new workboxPlugin.InjectManifest({
-            swSrc: 'public/sw-offline.js',
-            swDest: 'sw.js',
-            importsDirectory: 'service-worker'
-        })
-    ]
-});
