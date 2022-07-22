@@ -114,6 +114,8 @@ self.addEventListener('fetch', e => {
 ## Chromeブラウザ (DevTool) で確認
 
 ![image](chrome_devtool.PNG)
+![gif sample](./chrome_dev.gif)
+
 
 1. ブラウザに「アプリ起動」ボタンが表示されます。
 1. DevToolでManifest・Service Workerを確認できます。
