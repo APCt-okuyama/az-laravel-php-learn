@@ -10,9 +10,9 @@
     
     <h1>これは PWA のテストです。</h1>
 
-    <h1>インストールできます。</h1>
+    <h1>アプリのようにインストールできます。</h1>
 
-    <h1>サーバーが停止していても動きます1。</h1>
+    <h1>オフラインでも動きます。</h1>
 
     <div class="col-md-4 text-right mb-3">
         <button class="btn btn-primary" type="button" onclick="installClick()">(test) install as pwa</button>
