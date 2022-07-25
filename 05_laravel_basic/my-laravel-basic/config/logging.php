@@ -114,8 +114,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
         //stdoutにログを出力させます
-        //.envにの設定変更
-        //LOG_CHANNEL=stdout
+        //.envの設定変更 LOG_CHANNEL=stdout
         'stdout' => [
             'driver' => 'monolog',
             'handler' => StreamHandler::class,

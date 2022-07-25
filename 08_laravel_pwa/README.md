@@ -1,15 +1,30 @@
-# Progressive Web Apps
+# Progressive Web Apps (PHP, Laravel)
 
 [Progressive Web Apps とは](https://developer.mozilla.org/ja/docs/Web/Progressive_web_apps)
 
-※現在、正式な標準ではない。
+(特徴)
+ブラウザーでキャッシュ機能を利用して、サーバーとの接続が無い状態でもアプリのように動作させることができる。
+スマートフォンでインストールされたNativeアプリのように利用できるのが特徴。※アプリのインストールが不要になる。
+
+Twitter, 日経電子版, Summoなどが対応している。
+
+
+***★★★ 現時点では正式な標準ではない。★★★***
 
 (key words)
 httpsが必須  
 サービスワーカーと呼ばれるスクリプトによりオフライン操作を実現  
-アプリがユーザーにどのように表示されるかを制御  
+マニュフェストファイルでアプリがユーザーにどのように表示されるかを制御  
 
-# Dev環境
+(補足)  
+Progressive Web Appはweb brower, javascriptの技術になります。 今回,PHP/Laravelで試していますがPHP/Laravel以外でも基本的には同様。今回は手元のLarave環境で試しています。
+
+# 仕組み と 機能
+service worker
+(編集中)
+
+# PHP LaravelでのDev環境
+
 ```
 php -v
 PHP 7.4.3 (cli) (built: Jun 13 2022 13:43:30) ( NTS )
@@ -26,6 +41,7 @@ npm -v
 # Laravel で試してみる
 
 https://web.dev/add-manifest/
+その他いろいろなブログなど。
 
 ## Laravel プロジェクトの作成
 
@@ -109,14 +125,16 @@ self.addEventListener('fetch', e => {
 </body>
 ```
 
-サービスワーカー(今回の場合は)
-
 ## Chromeブラウザ (DevTool) で確認
 
 ![image](chrome_devtool.PNG)
 
 1. ブラウザに「アプリ起動」ボタンが表示されます。
 1. DevToolでManifest・Service Workerを確認できます。
+
+![gif sample](./sample_pwa.gif)
+この動画はWindows標準搭載のゲームバーで作成。
+※ゲームバーはWindow単位で録画可能です。
 
 ## Azure App Service
 
@@ -138,13 +156,11 @@ az webapp up --resource-group $RG_NAME --name my-example-laravel-php74-pwa \
   --location $LOCATION -p my-example-app-plan --sku P1V2 --runtime "php|7.4"
 ```
 "php|7.4"の場合は apacheが利用されます。.htaccess が必要です。  
-"php|8.0"の場合は nginx,fpmが利用されます。.htaccessは不要ですが、別途設定が必要です。 
+"php|8.0"の場合は nginx,fpmが利用されます。.htaccessは不要で、別途設定が必要です。 
 
 Browserでアクセスすると Progressive Web Apps として認識されています。
 ```
 https://my-example-laravel-php74-pwa.azurewebsites.net
 ```
 
-![gif sample](./chrome_dev.gif)
-
-スマホでもアクセスしてみる。
+スマホ(iOS,Android)でもアクセスしてみる。

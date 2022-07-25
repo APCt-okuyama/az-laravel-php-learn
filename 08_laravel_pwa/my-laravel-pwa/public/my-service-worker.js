@@ -1,4 +1,4 @@
-console.log('start sw.js ...')
+console.log('start service worker ...')
 
 myCacheKey='myCacheKey';
 
@@ -11,22 +11,21 @@ self.addEventListener('install', e => {
                 '/',
             ]);
         })
-
 });
 
 //fetch
 self.addEventListener('fetch', e => {
     console.log('fetch start....')
-    const url = new URL(e.request.url)
-    console.log(url.host + ':' + location.host);
+    // const url = new URL(e.request.url)
+    // console.log(url.host + ':' + location.host);
     
-    e.respondWith(getFetchResponse(e.request));
+    // e.respondWith(getFetchResponse(e.request));
 });
 
 async function getFetchResponse(request) {
-    const url = new URL(request.url);
-    const cachedResponse = await caches.match(request);
-    if(cachedResponse) {
-        return cachedResponse;
-    }    
+    // const url = new URL(request.url);
+    // const cachedResponse = await caches.match(request);
+    // if(cachedResponse) {
+    //     return cachedResponse;
+    // }    
 }
