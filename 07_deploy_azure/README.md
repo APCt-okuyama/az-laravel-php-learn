@@ -213,6 +213,24 @@ az containerapp logs show --name my-container-app --resource-group $RG_NAME --ta
 ```
 az containerapp exec --name my-container-app --resource-group $RG_NAME
 
+#### (補足 サイドカーパターン)　1つのコンテナアプリ(Pod)で複数のコンテナを実行する
+
+[複数のコンテナー](https://learn.microsoft.com/ja-jp/azure/container-apps/containers)について。
+
+(注意)
+2022/10 時点では ARMテンプレート で指定する必要がある
+```
+
+```
+※ ARM テンプレートの利用方法について調べる必要あり
+```
+az deployment group create --resource-group $RG_NAME --template-file template.json --parameters '@parameters.json'
+```
+
+[参考記事](https://zenn.dev/08thse/articles/67-aca-multiple-containers)
+
+※ `az containerapp compose` というコマンドがあるが利用できる？？
+
 ### 6. Gateway
 
 vnet, subnet, pip, application gatewayを作成します。
